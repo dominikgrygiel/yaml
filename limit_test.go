@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	. "gopkg.in/check.v1"
-	"gopkg.in/dominikgrygiel/yaml.v2dg"
+	"gopkg.in/dominikgrygiel/yaml.v4"
 )
 
 var limitTests = []struct {
