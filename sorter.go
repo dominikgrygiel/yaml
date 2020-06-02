@@ -9,6 +9,7 @@ type keyList []reflect.Value
 
 func (l keyList) Len() int      { return len(l) }
 func (l keyList) Swap(i, j int) { l[i], l[j] = l[j], l[i] }
+// Taken from: https://github.com/go-yaml/yaml/pull/439
 func (l keyList) Less(i, j int) bool {
 	a := l[i]
 	b := l[j]
@@ -36,39 +37,51 @@ func (l keyList) Less(i, j int) bool {
 	if ak != reflect.String || bk != reflect.String {
 		return ak < bk
 	}
+
 	ar, br := []rune(a.String()), []rune(b.String())
 	for i := 0; i < len(ar) && i < len(br); i++ {
+		if unicode.IsDigit(ar[i]) && unicode.IsDigit(br[i]) {
+			// Count the number of leading zeros and digit sum for ar.
+			var asum int64
+			var ai, azeros int
+			for ai = i; ai < len(ar) && unicode.IsDigit(ar[ai]); ai++ {
+				asum = asum*10 + int64(ar[ai]-'0')
+				if asum == 0 && ar[ai] == '0' {
+					azeros++
+				}
+			}
+
+			// Count the number of leading zeros and digit sum for br.
+			var bsum int64
+			var bi, bzeroes int
+			for bi = i; bi < len(br) && unicode.IsDigit(br[bi]); bi++ {
+				bsum = bsum*10 + int64(br[bi]-'0')
+				if bsum == 0 && br[bi] == '0' {
+					bzeroes++
+				}
+			}
+
+			switch {
+			case asum != bsum:
+				return asum < bsum
+			case azeros != bzeroes:
+				return azeros < bzeroes
+			default:
+				i = ai
+				continue
+			}
+		}
+
 		if ar[i] == br[i] {
 			continue
 		}
 		al := unicode.IsLetter(ar[i])
 		bl := unicode.IsLetter(br[i])
-		if al || bl {
+		if al && bl {
 			return ar[i] < br[i]
 		}
-
-		var ai, bi int
-		var an, bn int64
-		if ar[i] == '0' || br[i] == '0' {
-			for j := i-1; j >= 0 && unicode.IsDigit(ar[j]); j-- {
-				if ar[j] != '0' {
-					an = 1
-					bn = 1
-					break
-				}
-			}
-		}
-		for ai = i; ai < len(ar) && unicode.IsDigit(ar[ai]); ai++ {
-			an = an*10 + int64(ar[ai]-'0')
-		}
-		for bi = i; bi < len(br) && unicode.IsDigit(br[bi]); bi++ {
-			bn = bn*10 + int64(br[bi]-'0')
-		}
-		if an != bn {
-			return an < bn
-		}
-		if ai != bi {
-			return ai < bi
+		if al || bl {
+			return bl
 		}
 		return ar[i] < br[i]
 	}
