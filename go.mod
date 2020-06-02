@@ -1,4 +1,4 @@
-module gopkg.in/dominikgrygiel/yaml.v4
+module gopkg.in/dominikgrygiel/yaml.v5
 
 go 1.14
 

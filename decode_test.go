@@ -9,7 +9,7 @@ import (
 	"time"
 
 	. "gopkg.in/check.v1"
-	"gopkg.in/dominikgrygiel/yaml.v4"
+	"gopkg.in/dominikgrygiel/yaml.v5"
 )
 
 var unmarshalIntTest = 123
